@@ -13,7 +13,6 @@
             background-color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Custom animations */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
@@ -52,10 +51,9 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <div id="cloud-badge" class="bg-blue-800/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-inner border border-white/10">
-                    <i class="fas fa-sync-alt fa-spin text-xs"></i> <span>Sambung Cloud...</span>
+                <div id="sheet-badge" onclick="switchTab('profile')" class="cursor-pointer bg-amber-500/90 hover:bg-amber-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm transition">
+                    <i class="fas fa-plug text-xs"></i> <span>Sila Set URL Google Sheets</span>
                 </div>
-                <div id="currentTime" class="hidden sm:block text-xs font-medium bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full"></div>
             </div>
         </div>
     </header>
@@ -63,6 +61,17 @@
     <!-- Main Container -->
     <main class="max-w-2xl mx-auto p-4 mt-2">
         
+        <!-- URL Missing Alert Banner -->
+        <div id="url-alert-banner" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between shadow-sm">
+            <div class="flex items-center space-x-3 text-amber-800 text-xs">
+                <i class="fas fa-exclamation-circle text-amber-600 text-lg"></i>
+                <span>Pautan Google Sheets belum disetkan. Masukkan Web App URL di tab Profil untuk menyimpan data secara kekal.</span>
+            </div>
+            <button onclick="switchTab('profile')" class="bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-xl hover:bg-amber-700 transition whitespace-nowrap ml-2">
+                Tetapkan
+            </button>
+        </div>
+
         <!-- Desktop Tabs -->
         <div class="hidden md:flex bg-white rounded-2xl shadow-sm border border-slate-200/80 mb-6 p-1.5 space-x-1">
             <button onclick="switchTab('profile')" id="tab-profile-desk" class="flex-1 py-3 px-4 rounded-xl font-semibold text-slate-500 hover:bg-slate-50 transition">Profil & Tetapan</button>
@@ -74,6 +83,23 @@
         <!-- Section: Profil -->
         <section id="sec-profile" class="hidden fade-in">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+                
+                <!-- Google Sheets Integration Box -->
+                <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel text-emerald-600 text-sm"></i> Google Apps Script Web App URL
+                        </label>
+                        <button onclick="openSheetGuide()" type="button" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold underline flex items-center gap-1">
+                            <i class="fas fa-circle-info"></i> Panduan Setup
+                        </button>
+                    </div>
+                    <input type="url" id="prof-sheeturl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-3 bg-white border border-emerald-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none transition shadow-inner">
+                    <p class="text-[11px] text-emerald-700 leading-relaxed">
+                        Masukkan URL Google Apps Script anda. Ini membolehkan semua data anda disimpan dan dimuatkan terus dari Google Sheets anda.
+                    </p>
+                </div>
+
                 <div>
                     <h2 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center justify-between">
                         <span><i class="fas fa-user-circle text-indigo-500 mr-2"></i>Maklumat Pengguna</span>
@@ -111,24 +137,8 @@
                     </div>
                 </div>
 
-                <!-- Google Sheets Integration Box -->
-                <div class="pt-4 border-t border-slate-100">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-bold text-emerald-700 uppercase tracking-wider">
-                            <i class="file-spreadsheet-icon text-emerald-600 fa-solid fa-file-excel mr-1"></i> Google Sheets Web App URL
-                        </label>
-                        <button onclick="openSheetGuide()" type="button" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline flex items-center gap-1">
-                            <i class="fas fa-circle-info"></i> Panduan Setup
-                        </button>
-                    </div>
-                    <input type="url" id="prof-sheeturl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition">
-                    <p class="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
-                        Masukkan URL Google Apps Script jika anda mahu setiap rekod ujian disegerakkan secara automatik ke fail Google Sheets anda.
-                    </p>
-                </div>
-
-                <button onclick="saveProfile()" id="btn-save-profile" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i> Simpan Profil & Tetapan
+                <button onclick="saveProfile()" id="btn-save-profile" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
+                    <i class="fas fa-file-excel mr-2"></i> Simpan Profil ke Google Sheets
                 </button>
             </div>
         </section>
@@ -168,7 +178,7 @@
                 </div>
 
                 <button onclick="checkBP()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
-                    <i class="fas fa-heart-pulse mr-2"></i> Analisis & Simpan
+                    <i class="fas fa-heart-pulse mr-2"></i> Analisis & Simpan ke Google Sheets
                 </button>
             </div>
 
@@ -216,7 +226,7 @@
                 </div>
 
                 <button onclick="checkSugar()" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
-                    <i class="fas fa-vial-circle-check mr-2"></i> Analisis & Simpan
+                    <i class="fas fa-vial-circle-check mr-2"></i> Analisis & Simpan ke Google Sheets
                 </button>
             </div>
 
@@ -238,11 +248,11 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 mb-4 gap-2">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-book-medical text-emerald-500 mr-2"></i>Buku Log MyCare</h2>
-                        <p class="text-xs text-slate-400">Rekod disegerakkan ke Cloud & Google Sheets</p>
+                        <p class="text-xs text-slate-400">Rekod disegerakkan terus dengan Google Sheets</p>
                     </div>
                     <div class="flex space-x-2 items-center w-full sm:w-auto justify-end">
-                        <button onclick="refreshData()" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 rounded-xl hover:bg-blue-100 transition flex items-center font-semibold">
-                            <i class="fas fa-sync-alt mr-1"></i> Segar Semula
+                        <button onclick="loadDataFromSheet()" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl hover:bg-emerald-100 transition flex items-center font-semibold">
+                            <i class="fas fa-sync-alt mr-1"></i> Muat Semula
                         </button>
                         <button onclick="prepareAndPrint()" class="text-xs bg-slate-900 text-white px-3 py-2 rounded-xl shadow hover:bg-slate-800 transition flex items-center font-semibold">
                             <i class="fas fa-print mr-1"></i> Cetak Laporan
@@ -303,33 +313,110 @@
         <div class="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-md font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-file-excel text-emerald-600 text-lg"></i> Setup Google Apps Script
+                    <i class="fa-solid fa-file-excel text-emerald-600 text-lg"></i> Setup Apps Script (Khas Google Sheets)
                 </h3>
                 <button onclick="closeSheetGuide()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-lg"></i></button>
             </div>
             
-            <ol class="list-decimal list-inside text-xs text-slate-600 space-y-3 leading-relaxed">
+            <p class="text-xs text-slate-600 mb-3">Ikuti langkah mudah ini untuk menjadikan Google Sheets anda sebagai pangkalan data MyCare:</p>
+
+            <ol class="list-decimal list-inside text-xs text-slate-600 space-y-2.5 leading-relaxed">
                 <li>Buka fail <strong class="text-slate-800">Google Sheets</strong> baharu di Google Drive anda.</li>
                 <li>Pergi ke menu <strong class="text-slate-800">Extensions &gt; Apps Script</strong>.</li>
-                <li>Padamkan semua kod sedia ada dan tampal (<em class="text-slate-800">paste</em>) kod berikut:</li>
+                <li>Padamkan semua kod sedia ada dan gantikan dengan kod di bawah:</li>
             </ol>
 
             <div class="relative my-3">
-                <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl text-[11px] font-mono overflow-x-auto select-all">
+                <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl text-[10px] font-mono overflow-x-auto select-all max-h-56">
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var recordSheet = ss.getSheetByName("Records") || ss.insertSheet("Records");
+  var profileSheet = ss.getSheetByName("Profile") || ss.insertSheet("Profile");
+  
+  var profileData = {};
+  var pValues = profileSheet.getDataRange().getValues();
+  if (pValues.length > 1) {
+    var lastRow = pValues[pValues.length - 1];
+    profileData = {
+      name: lastRow[0] || '',
+      age: lastRow[1] || '',
+      gender: lastRow[2] || 'Lelaki',
+      weight: lastRow[3] || '',
+      height: lastRow[4] || ''
+    };
+  }
+  
+  var records = [];
+  var rValues = recordSheet.getDataRange().getValues();
+  for (var i = 1; i < rValues.length; i++) {
+    var row = rValues[i];
+    if (row[0]) {
+      records.push({
+        id: String(row[0]),
+        date: row[1],
+        type: row[2],
+        valueStr: row[3],
+        extraStr: row[4],
+        status: row[5],
+        notes: row[6],
+        colorClass: row[7]
+      });
+    }
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({ profile: profileData, records: records }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    data.timestamp || new Date().toLocaleString('ms-MY'),
-    data.nama || '',
-    data.umur || '',
-    data.jenis || '',
-    data.bacaan || '',
-    data.butiran || '',
-    data.status || '',
-    data.nota || ''
-  ]);
-  return ContentService.createTextOutput("OK").setMimeType(ContentService.MimeType.TEXT);
+  
+  if (data.action === 'SAVE_PROFILE') {
+    var profileSheet = ss.getSheetByName("Profile") || ss.insertSheet("Profile");
+    if (profileSheet.getLastRow() === 0) {
+      profileSheet.appendRow(["Nama", "Umur", "Jantina", "Berat", "Tinggi", "Tarikh"]);
+    }
+    profileSheet.appendRow([
+      data.name || '',
+      data.age || '',
+      data.gender || '',
+      data.weight || '',
+      data.height || '',
+      new Date().toLocaleString('ms-MY')
+    ]);
+  } else if (data.action === 'ADD_RECORD') {
+    var recordSheet = ss.getSheetByName("Records") || ss.insertSheet("Records");
+    if (recordSheet.getLastRow() === 0) {
+      recordSheet.appendRow(["ID", "Tarikh", "Jenis", "Bacaan", "Butiran", "Status", "Nota", "ColorClass"]);
+    }
+    recordSheet.appendRow([
+      data.id || Date.now().toString(),
+      data.date || new Date().toISOString(),
+      data.type || '',
+      data.valueStr || '',
+      data.extraStr || '',
+      data.status || '',
+      data.notes || '',
+      data.colorClass || ''
+    ]);
+  } else if (data.action === 'DELETE_RECORD') {
+    var recordSheet = ss.getSheetByName("Records");
+    if (recordSheet) {
+      var rows = recordSheet.getDataRange().getValues();
+      for (var i = rows.length - 1; i >= 1; i--) {
+        if (String(rows[i][0]) === String(data.id)) {
+          recordSheet.deleteRow(i + 1);
+          break;
+        }
+      }
+    }
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "SUCCESS" }))
+    .setMimeType(ContentService.MimeType.JSON);
 }</pre>
             </div>
 
@@ -337,20 +424,16 @@ function doPost(e) {
                 <li>Tekan butang <strong class="text-slate-800">Deploy &gt; New deployment</strong>.</li>
                 <li>Pilih jenis <strong class="text-slate-800">Web app</strong>.</li>
                 <li>Setkan <strong class="text-slate-800">Who has access</strong> kepada <strong class="text-emerald-700 font-semibold">Anyone</strong> (Penting!).</li>
-                <li>Tekan <strong class="text-slate-800">Deploy</strong>, luluskan kebenaran, dan salin (<em class="text-slate-800">copy</em>) <strong>Web App URL</strong> yang terhasil ke ruangan Profil MyCare.</li>
+                <li>Tekan <strong class="text-slate-800">Deploy</strong>, luluskan kebenaran (*Authorize access*), dan salin <strong>Web App URL</strong> yang dihasilkan ke ruangan Profil MyCare.</li>
             </ol>
 
             <button onclick="closeSheetGuide()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition">
-                Saya Faham & Sedia
+                Saya Dah Salin & Sedia
             </button>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+    <script>
         // Mendedahkan fungsi kepada window
         window.switchTab = switchTab;
         window.showModal = showModal;
@@ -362,102 +445,85 @@ function doPost(e) {
         window.saveProfile = saveProfile;
         window.prepareAndPrint = prepareAndPrint;
         window.deleteRecord = deleteRecord;
-        window.refreshData = refreshData;
+        window.loadDataFromSheet = loadDataFromSheet;
 
         let healthRecords = [];
-        let userProfile = { name: '', age: '', gender: 'Lelaki', weight: '', height: '', sheetUrl: '' };
-        
-        let app, auth, db, currentUser;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mycare-health-40';
+        let userProfile = { name: '', age: '', gender: 'Lelaki', weight: '', height: '' };
 
-        async function initApp() {
-            updateCloudBadge("Sambung Cloud...", "loading");
-            let configObj = null;
-            try {
-                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                    configObj = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
-                }
-            } catch (e) {
-                console.error("Ralat membaca konfigurasi Firebase:", e);
-            }
-
-            if (configObj && Object.keys(configObj).length > 0) {
-                try {
-                    app = initializeApp(configObj);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-                    
-                    let userCred;
-                    if (auth.currentUser) {
-                        userCred = { user: auth.currentUser };
-                    } else if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        try {
-                            userCred = await signInWithCustomToken(auth, __initial_auth_token);
-                        } catch (tokenErr) {
-                            userCred = await signInAnonymously(auth);
-                        }
-                    } else {
-                        userCred = await signInAnonymously(auth);
-                    }
-                    
-                    currentUser = userCred.user;
-                    updateCloudBadge("Cloud Disambung", "active");
-                    
-                    await loadProfileData();
-                    listenToRecordsData();
-                } catch (e) {
-                    console.error("Firebase initialization failed:", e);
-                    updateCloudBadge("Ralat Cloud", "error");
-                }
-            } else {
-                updateCloudBadge("Mod Luar Talian", "offline");
-            }
+        function getSheetUrl() {
+            return localStorage.getItem('mycare_script_url') || '';
         }
 
-        function updateCloudBadge(text, state) {
-            const badge = document.getElementById('cloud-badge');
+        function saveSheetUrl(url) {
+            localStorage.setItem('mycare_script_url', url.trim());
+        }
+
+        function updateBadge(text, state) {
+            const badge = document.getElementById('sheet-badge');
+            const alertBanner = document.getElementById('url-alert-banner');
             if (!badge) return;
-            
+
             if (state === "active") {
-                badge.className = "bg-emerald-600/90 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm border border-emerald-400/30";
-                badge.innerHTML = `<i class="fas fa-cloud text-xs"></i> <span>${text}</span>`;
+                badge.className = "bg-emerald-600/90 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm transition";
+                badge.innerHTML = `<i class="fas fa-check-circle text-xs"></i> <span>${text}</span>`;
+                if(alertBanner) alertBanner.classList.add('hidden');
             } else if (state === "loading") {
-                badge.className = "bg-blue-800 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
+                badge.className = "bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
                 badge.innerHTML = `<i class="fas fa-spinner fa-spin text-xs"></i> <span>${text}</span>`;
             } else if (state === "error") {
                 badge.className = "bg-rose-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
                 badge.innerHTML = `<i class="fas fa-exclamation-circle text-xs"></i> <span>${text}</span>`;
             } else {
-                badge.className = "bg-slate-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
-                badge.innerHTML = `<i class="fas fa-hdd text-xs"></i> <span>${text}</span>`;
+                badge.className = "cursor-pointer bg-amber-500/90 hover:bg-amber-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm transition";
+                badge.innerHTML = `<i class="fas fa-plug text-xs"></i> <span>${text}</span>`;
+                if(alertBanner) alertBanner.classList.remove('hidden');
             }
         }
 
-        function updateTime() {
-            const now = new Date();
-            const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
-            const timeEl = document.getElementById('currentTime');
-            if (timeEl) timeEl.textContent = now.toLocaleDateString('ms-MY', options);
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
+        async function initApp() {
+            const storedUrl = getSheetUrl();
+            const urlInput = document.getElementById('prof-sheeturl');
+            if (urlInput) urlInput.value = storedUrl;
 
-        async function loadProfileData() {
-            if (!db || !currentUser) return;
+            if (storedUrl) {
+                await loadDataFromSheet();
+            } else {
+                updateBadge("Sila Set URL Google Sheets", "missing");
+            }
+        }
+
+        async function loadDataFromSheet() {
+            const sheetUrl = getSheetUrl();
+            if (!sheetUrl) {
+                updateBadge("Sila Set URL Google Sheets", "missing");
+                return;
+            }
+
+            updateBadge("Sambung Google Sheets...", "loading");
+
             try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profile', 'info');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    userProfile = docSnap.data();
+                const response = await fetch(sheetUrl);
+                const data = await response.json();
+
+                if (data.profile) {
+                    userProfile = data.profile;
                     if (document.getElementById('prof-name')) document.getElementById('prof-name').value = userProfile.name || '';
                     if (document.getElementById('prof-age')) document.getElementById('prof-age').value = userProfile.age || '';
                     if (document.getElementById('prof-gender')) document.getElementById('prof-gender').value = userProfile.gender || 'Lelaki';
                     if (document.getElementById('prof-weight')) document.getElementById('prof-weight').value = userProfile.weight || '';
                     if (document.getElementById('prof-height')) document.getElementById('prof-height').value = userProfile.height || '';
-                    if (document.getElementById('prof-sheeturl')) document.getElementById('prof-sheeturl').value = userProfile.sheetUrl || '';
                 }
-            } catch (e) {
-                console.error("Gagal memuat profil:", e);
+
+                if (data.records && Array.isArray(data.records)) {
+                    healthRecords = data.records;
+                    healthRecords.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                    renderLog();
+                }
+
+                updateBadge("Google Sheets Terhubung", "active");
+            } catch (err) {
+                console.error("Gagal membaca Google Sheets:", err);
+                updateBadge("Ralat Sambungan Google Sheets", "error");
             }
         }
 
@@ -469,133 +535,106 @@ function doPost(e) {
             const height = document.getElementById('prof-height').value.trim();
             const sheetUrl = document.getElementById('prof-sheeturl').value.trim();
 
+            if (!sheetUrl) {
+                showModal("Sila masukkan Web App URL Google Apps Script anda untuk menghubungkan Google Sheets.", "URL Diperlukan", "warning");
+                return;
+            }
+
             if (!name) {
                 showModal("Sila masukkan Nama Penuh anda sebelum menyimpan profil.", "Maklumat Diperlukan", "warning");
                 return;
             }
 
-            userProfile = { name, age, gender, weight, height, sheetUrl, lastUpdated: new Date().toISOString() };
+            saveSheetUrl(sheetUrl);
+            userProfile = { name, age, gender, weight, height };
 
-            if (db && currentUser) {
-                try {
-                    updateCloudBadge("Menyimpan...", "loading");
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profile', 'info');
-                    await setDoc(docRef, userProfile, { merge: true });
-                    updateCloudBadge("Cloud Disambung", "active");
-                    
-                    let msg = "Profil dan tetapan MyCare telah berjaya disimpan ke Cloud!";
-                    if(sheetUrl) msg += " Pautan Google Sheets anda juga sedia untuk penghantaran automatik.";
-                    
-                    showModal(msg, "Berjaya Disimpan", "info");
-                } catch (e) {
-                    console.error("Gagal menyimpan profil:", e);
-                    updateCloudBadge("Ralat Cloud", "error");
-                    showModal("Gagal menyimpan ke Cloud: " + e.message, "Ralat", "error");
-                }
-            } else {
-                showModal("Data disimpan untuk sesi semasa.", "Info", "info");
-            }
-        }
-
-        function listenToRecordsData() {
-            if (!db || !currentUser) return;
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'records');
-            
-            onSnapshot(colRef, (snapshot) => {
-                const records = [];
-                snapshot.forEach(docSnap => {
-                    records.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                
-                records.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-                healthRecords = records;
-                renderLog();
-            }, (error) => {
-                console.error("Gagal membaca rekod:", error);
-                updateCloudBadge("Ralat Cloud", "error");
-            });
-        }
-
-        function refreshData() {
-            if (db && currentUser) {
-                listenToRecordsData();
-                loadProfileData();
-                showModal("Data telah disegerakkan semula dari Cloud.", "Kemas Kini Berjaya", "info");
-            } else {
-                initApp();
-            }
-        }
-
-        // Hantar data ke Google Sheets Web App URL jika disetkan
-        async function syncToGoogleSheet(record) {
-            const url = userProfile.sheetUrl;
-            if (!url) return false;
+            updateBadge("Menyimpan ke Google Sheets...", "loading");
 
             try {
-                const payload = {
-                    timestamp: new Date().toLocaleString('ms-MY'),
-                    nama: userProfile.name || 'Pengguna MyCare',
-                    umur: userProfile.age || '-',
-                    jenis: record.type === 'BP' ? 'Tekanan Darah' : 'Gula Darah',
-                    bacaan: record.valueStr,
-                    butiran: record.extraStr,
-                    status: record.status,
-                    nota: record.notes
-                };
+                await fetch(sheetUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'SAVE_PROFILE',
+                        name, age, gender, weight, height
+                    })
+                });
 
-                await fetch(url, {
+                updateBadge("Google Sheets Terhubung", "active");
+                showModal("Profil dan tetapan MyCare anda telah berjaya disimpan secara kekal ke Google Sheets!", "Berjaya Disimpan", "info");
+            } catch (e) {
+                console.error("Gagal menyimpan profil:", e);
+                updateBadge("Ralat Google Sheets", "error");
+                showModal("Gagal menyimpan ke Google Sheets: " + e.message, "Ralat", "error");
+            }
+        }
+
+        async function saveRecord(newRecord) {
+            const sheetUrl = getSheetUrl();
+            if (!sheetUrl) {
+                showModal("Sila masukkan Web App URL Google Apps Script di tab Profil terlebih dahulu.", "Google Sheets Belum Terhubung", "warning");
+                return false;
+            }
+
+            updateBadge("Menyimpan ke Google Sheets...", "loading");
+
+            const payload = {
+                action: 'ADD_RECORD',
+                id: Date.now().toString(),
+                date: newRecord.date,
+                type: newRecord.type,
+                valueStr: newRecord.valueStr,
+                extraStr: newRecord.extraStr,
+                status: newRecord.status,
+                notes: newRecord.notes,
+                colorClass: newRecord.colorClass
+            };
+
+            try {
+                await fetch(sheetUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload)
                 });
-                return true;
-            } catch (err) {
-                console.warn("Gagal sync ke Google Sheets:", err);
-                return false;
-            }
-        }
 
-        async function saveRecord(newRecord) {
-            // Hantar ke Google Sheets jika URL ada
-            const sheetSynced = await syncToGoogleSheet(newRecord);
-
-            if (db && currentUser) {
-                try {
-                    updateCloudBadge("Menyimpan...", "loading");
-                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'records');
-                    await addDoc(colRef, newRecord);
-                    updateCloudBadge("Cloud Disambung", "active");
-                    return { success: true, sheetSynced };
-                } catch (e) {
-                    console.error("Gagal simpan rekod:", e);
-                    updateCloudBadge("Ralat Cloud", "error");
-                    return { success: false, sheetSynced, error: e.message };
-                }
-            } else {
-                healthRecords.unshift({ id: Date.now().toString(), ...newRecord });
+                healthRecords.unshift(payload);
                 renderLog();
-                return { success: true, sheetSynced };
+
+                updateBadge("Google Sheets Terhubung", "active");
+                return true;
+            } catch (e) {
+                console.error("Gagal simpan rekod:", e);
+                updateBadge("Ralat Google Sheets", "error");
+                return false;
             }
         }
 
         async function deleteRecord(recordId) {
             if (!recordId) return;
-            
-            if (db && currentUser) {
-                try {
-                    updateCloudBadge("Memadam...", "loading");
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', recordId);
-                    await deleteDoc(docRef);
-                    updateCloudBadge("Cloud Disambung", "active");
-                    showModal("Rekod telah dipadamkan daripada Cloud.", "Berjaya Dipadam", "info");
-                } catch (e) {
-                    showModal("Gagal memadam rekod: " + e.message, "Ralat", "error");
-                }
-            } else {
+            const sheetUrl = getSheetUrl();
+            if (!sheetUrl) return;
+
+            updateBadge("Memadam di Google Sheets...", "loading");
+
+            try {
+                await fetch(sheetUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'DELETE_RECORD',
+                        id: recordId
+                    })
+                });
+
                 healthRecords = healthRecords.filter(r => r.id !== recordId);
                 renderLog();
-                showModal("Rekod dipadamkan.", "Berjaya", "info");
+                updateBadge("Google Sheets Terhubung", "active");
+                showModal("Rekod telah dipadamkan daripada Google Sheets.", "Berjaya Dipadam", "info");
+            } catch (e) {
+                showModal("Gagal memadam rekod: " + e.message, "Ralat", "error");
             }
         }
 
@@ -618,8 +657,8 @@ function doPost(e) {
 
             document.getElementById('sec-' + tabId)?.classList.remove('hidden');
 
-            let activeDeskClass = tabId === 'profile' ? ['text-indigo-600', 'bg-indigo-50'] : tabId === 'bp' ? ['text-blue-600', 'bg-blue-50'] : tabId === 'sugar' ? ['text-red-600', 'bg-red-50'] : ['text-emerald-600', 'bg-emerald-50'];
-            let activeMobClass = tabId === 'profile' ? 'text-indigo-600' : tabId === 'bp' ? 'text-blue-600' : tabId === 'sugar' ? 'text-red-500' : 'text-emerald-500';
+            let activeDeskClass = tabId === 'profile' ? ['text-emerald-600', 'bg-emerald-50'] : tabId === 'bp' ? ['text-blue-600', 'bg-blue-50'] : tabId === 'sugar' ? ['text-red-600', 'bg-red-50'] : ['text-emerald-600', 'bg-emerald-50'];
+            let activeMobClass = tabId === 'profile' ? 'text-emerald-600' : tabId === 'bp' ? 'text-blue-600' : tabId === 'sugar' ? 'text-red-500' : 'text-emerald-500';
 
             const activeDesk = document.getElementById('tab-' + tabId + '-desk');
             if (activeDesk) {
@@ -732,9 +771,8 @@ function doPost(e) {
                 colorClass: color.replace('border-', 'text-')
             });
 
-            if (res.success) {
-                let noteExtra = res.sheetSynced ? " (Disimpan ke Cloud & Google Sheets!)" : " (Disimpan ke Cloud!)";
-                showModal("Rekod Tekanan Darah telah dianalisis dan disimpan secara automatik" + noteExtra, "Berjaya Disimpan", "info");
+            if (res) {
+                showModal("Rekod Tekanan Darah telah dianalisis dan disimpan ke Google Sheets!", "Berjaya Disimpan", "info");
                 document.getElementById('sys').value = '';
                 document.getElementById('dia').value = '';
                 document.getElementById('hr').value = '';
@@ -806,9 +844,8 @@ function doPost(e) {
                 colorClass: color.replace('border-', 'text-')
             });
 
-            if (res.success) {
-                let noteExtra = res.sheetSynced ? " (Disimpan ke Cloud & Google Sheets!)" : " (Disimpan ke Cloud!)";
-                showModal("Rekod Gula Darah telah dianalisis dan disimpan secara automatik" + noteExtra, "Berjaya Disimpan", "info");
+            if (res) {
+                showModal("Rekod Gula Darah telah dianalisis dan disimpan ke Google Sheets!", "Berjaya Disimpan", "info");
                 document.getElementById('glucose').value = '';
             }
         }
@@ -822,7 +859,7 @@ function doPost(e) {
                     <div class="text-center py-12 text-slate-400">
                         <i class="fas fa-folder-open text-4xl mb-3 text-slate-300"></i>
                         <p class="font-medium">Tiada rekod setakat ini.</p>
-                        <p class="text-xs mt-1 text-slate-400">Setiap rekod ujian akan terpapar di sini secara automatik.</p>
+                        <p class="text-xs mt-1 text-slate-400">Setiap rekod ujian yang disimpan ke Google Sheets akan terpapar di sini.</p>
                     </div>`;
                 return;
             }
@@ -966,7 +1003,7 @@ function doPost(e) {
             return "Obesiti";
         }
 
-        initApp();
+        window.onload = initApp;
     </script>
 </body>
 </html>
