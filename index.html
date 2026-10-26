@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyCare - Pemantau Kesihatan 40+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom animations */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Gaya Khas Untuk Cetakan Laporan */
+        @media print {
+            body { background-color: white !important; padding: 0 !important; }
+            body > *:not(#print-container) { display: none !important; }
+            #print-container { display: block !important; width: 100%; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased pb-24 md:pb-0 min-h-screen flex flex-col justify-between">
+
+    <!-- Print Container (Hanya kelihatan semasa proses mencetak) -->
+    <div id="print-container" class="hidden p-6"></div>
+
+    <div>
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-teal-700 text-white shadow-lg p-4 sticky top-0 z-50">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                    <i class="fas fa-heartbeat text-xl text-teal-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">MyCare</h1>
+                    <p class="text-[10px] text-blue-100 font-medium tracking-wide">PEMANTAU KESIHATAN 40+</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div id="cloud-badge" class="bg-blue-800/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-inner border border-white/10">
+                    <i class="fas fa-sync-alt fa-spin text-xs"></i> <span>Sambung Cloud...</span>
+                </div>
+                <div id="currentTime" class="hidden sm:block text-xs font-medium bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-2xl mx-auto p-4 mt-2">
+        
+        <!-- Desktop Tabs -->
+        <div class="hidden md:flex bg-white rounded-2xl shadow-sm border border-slate-200/80 mb-6 p-1.5 space-x-1">
+            <button onclick="switchTab('profile')" id="tab-profile-desk" class="flex-1 py-3 px-4 rounded-xl font-semibold text-slate-500 hover:bg-slate-50 transition">Profil & Tetapan</button>
+            <button onclick="switchTab('bp')" id="tab-bp-desk" class="flex-1 py-3 px-4 rounded-xl font-semibold text-blue-600 bg-blue-50 transition">Tekanan Darah</button>
+            <button onclick="switchTab('sugar')" id="tab-sugar-desk" class="flex-1 py-3 px-4 rounded-xl font-semibold text-slate-500 hover:bg-slate-50 transition">Gula Darah</button>
+            <button onclick="switchTab('log')" id="tab-log-desk" class="flex-1 py-3 px-4 rounded-xl font-semibold text-slate-500 hover:bg-slate-50 transition">Buku Log</button>
+        </div>
+
+        <!-- Section: Profil -->
+        <section id="sec-profile" class="hidden fade-in">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center justify-between">
+                        <span><i class="fas fa-user-circle text-indigo-500 mr-2"></i>Maklumat Pengguna</span>
+                        <span class="text-xs font-normal text-slate-400">MyCare Profile</span>
+                    </h2>
+                    
+                    <div class="space-y-4 mt-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nama Penuh</label>
+                            <input type="text" id="prof-name" placeholder="Nama anda" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Umur (Tahun)</label>
+                                <input type="number" id="prof-age" placeholder="Contoh: 41" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition" inputmode="numeric">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Jantina</label>
+                                <select id="prof-gender" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition">
+                                    <option value="Lelaki">Lelaki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Berat (kg)</label>
+                                <input type="number" id="prof-weight" placeholder="Contoh: 70" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition" inputmode="decimal">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Tinggi (cm)</label>
+                                <input type="number" id="prof-height" placeholder="Contoh: 165" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition" inputmode="numeric">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Sheets Integration Box -->
+                <div class="pt-4 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                            <i class="file-spreadsheet-icon text-emerald-600 fa-solid fa-file-excel mr-1"></i> Google Sheets Web App URL
+                        </label>
+                        <button onclick="openSheetGuide()" type="button" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline flex items-center gap-1">
+                            <i class="fas fa-circle-info"></i> Panduan Setup
+                        </button>
+                    </div>
+                    <input type="url" id="prof-sheeturl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition">
+                    <p class="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                        Masukkan URL Google Apps Script jika anda mahu setiap rekod ujian disegerakkan secara automatik ke fail Google Sheets anda.
+                    </p>
+                </div>
+
+                <button onclick="saveProfile()" id="btn-save-profile" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i> Simpan Profil & Tetapan
+                </button>
+            </div>
+        </section>
+
+        <!-- Section: Tekanan Darah -->
+        <section id="sec-bp" class="fade-in block">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <span><i class="fas fa-stethoscope text-blue-500 mr-2"></i>Rekod Tekanan Darah</span>
+                    <span class="text-xs bg-blue-100 text-blue-700 font-medium px-2.5 py-1 rounded-full">mmHg</span>
+                </h2>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Sistolik (Atas)</label>
+                        <input type="number" id="sys" placeholder="Contoh: 120" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition text-xl font-semibold" inputmode="numeric">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Diastolik (Bawah)</label>
+                        <input type="number" id="dia" placeholder="Contoh: 80" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition text-xl font-semibold" inputmode="numeric">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Kadar Nadi (bpm)</label>
+                    <input type="number" id="hr" placeholder="Contoh: 75" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition text-md" inputmode="numeric">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Waktu / Nota</label>
+                    <select id="bp-notes" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition text-sm">
+                        <option value="Pagi (Selepas Bangun)">Pagi (Selepas Bangun)</option>
+                        <option value="Malam (Sebelum Tidur)">Malam (Sebelum Tidur)</option>
+                        <option value="Selepas Bersenam">Selepas Bersenam</option>
+                        <option value="Rawak">Rawak / Lain-lain</option>
+                    </select>
+                </div>
+
+                <button onclick="checkBP()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
+                    <i class="fas fa-heart-pulse mr-2"></i> Analisis & Simpan
+                </button>
+            </div>
+
+            <!-- BP Result Card -->
+            <div id="bp-result" class="hidden mt-6 bg-white p-5 rounded-2xl shadow-sm border-l-4">
+                <div class="flex items-start">
+                    <div id="bp-icon" class="text-3xl mr-4 mt-1"></div>
+                    <div>
+                        <h3 id="bp-status" class="text-lg font-bold"></h3>
+                        <p id="bp-advice" class="text-slate-600 mt-2 text-sm leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Gula Darah -->
+        <section id="sec-sugar" class="hidden fade-in">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <span><i class="fas fa-droplet text-red-500 mr-2"></i>Rekod Gula Darah</span>
+                    <span class="text-xs bg-red-100 text-red-700 font-medium px-2.5 py-1 rounded-full">mmol/L</span>
+                </h2>
+                
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Bacaan Gula (mmol/L)</label>
+                    <input type="number" step="0.1" id="glucose" placeholder="Contoh: 5.4" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition text-3xl font-bold text-center text-slate-800" inputmode="decimal">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Kategori Ujian</label>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-red-50/50 transition">
+                            <input type="radio" name="sugarType" value="Berpuasa" class="form-radio h-4 w-4 text-red-600" checked>
+                            <span class="ml-3 text-slate-700 font-medium text-sm">Berpuasa (>8 jam)</span>
+                        </label>
+                        <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-red-50/50 transition">
+                            <input type="radio" name="sugarType" value="2 Jam Selepas Makan" class="form-radio h-4 w-4 text-red-600">
+                            <span class="ml-3 text-slate-700 font-medium text-sm">2 Jam Selepas Makan</span>
+                        </label>
+                        <label class="flex items-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-red-50/50 transition">
+                            <input type="radio" name="sugarType" value="Rawak" class="form-radio h-4 w-4 text-red-600">
+                            <span class="ml-3 text-slate-700 font-medium text-sm">Rawak (Bila-bila masa)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="checkSugar()" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl shadow-md transition transform active:scale-95 flex justify-center items-center">
+                    <i class="fas fa-vial-circle-check mr-2"></i> Analisis & Simpan
+                </button>
+            </div>
+
+            <!-- Sugar Result Card -->
+            <div id="sugar-result" class="hidden mt-6 bg-white p-5 rounded-2xl shadow-sm border-l-4">
+                <div class="flex items-start">
+                    <div id="sugar-icon" class="text-3xl mr-4 mt-1"></div>
+                    <div>
+                        <h3 id="sugar-status" class="text-lg font-bold"></h3>
+                        <p id="sugar-advice" class="text-slate-600 mt-2 text-sm leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Buku Log -->
+        <section id="sec-log" class="hidden fade-in">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 min-h-[400px]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 mb-4 gap-2">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-book-medical text-emerald-500 mr-2"></i>Buku Log MyCare</h2>
+                        <p class="text-xs text-slate-400">Rekod disegerakkan ke Cloud & Google Sheets</p>
+                    </div>
+                    <div class="flex space-x-2 items-center w-full sm:w-auto justify-end">
+                        <button onclick="refreshData()" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 rounded-xl hover:bg-blue-100 transition flex items-center font-semibold">
+                            <i class="fas fa-sync-alt mr-1"></i> Segar Semula
+                        </button>
+                        <button onclick="prepareAndPrint()" class="text-xs bg-slate-900 text-white px-3 py-2 rounded-xl shadow hover:bg-slate-800 transition flex items-center font-semibold">
+                            <i class="fas fa-print mr-1"></i> Cetak Laporan
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="log-container" class="space-y-3">
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fas fa-folder-open text-4xl mb-3 text-slate-300"></i>
+                        <p class="font-medium">Tiada rekod setakat ini.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-lg pb-safe z-50">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="switchTab('profile')" id="tab-profile-mob" class="flex flex-col items-center justify-center w-full h-full text-slate-400">
+                <i class="fas fa-user-gear text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Profil</span>
+            </button>
+            <button onclick="switchTab('bp')" id="tab-bp-mob" class="flex flex-col items-center justify-center w-full h-full text-blue-600">
+                <i class="fas fa-stethoscope text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Tekanan Darah</span>
+            </button>
+            <button onclick="switchTab('sugar')" id="tab-sugar-mob" class="flex flex-col items-center justify-center w-full h-full text-slate-400">
+                <i class="fas fa-droplet text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Gula Darah</span>
+            </button>
+            <button onclick="switchTab('log')" id="tab-log-mob" class="flex flex-col items-center justify-center w-full h-full text-slate-400">
+                <i class="fas fa-book-medical text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Buku Log</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Custom Modal for Alerts -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-[100] hidden opacity-0 transition-opacity">
+        <div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm transform scale-95 transition-transform shadow-2xl" id="modal-content">
+            <div class="text-center">
+                <div id="modal-icon-container" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <i id="modal-icon" class="fas fa-info-circle text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2" id="modal-title">Makluman</h3>
+                <p class="text-sm text-slate-600 mb-6 leading-relaxed" id="modal-message"></p>
+                <button onclick="closeModal()" class="w-full bg-slate-900 text-white rounded-xl py-3 font-semibold hover:bg-slate-800 transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Sheets Setup Guide Modal -->
+    <div id="sheet-guide-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-[100] hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-md font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-emerald-600 text-lg"></i> Setup Google Apps Script
+                </h3>
+                <button onclick="closeSheetGuide()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <ol class="list-decimal list-inside text-xs text-slate-600 space-y-3 leading-relaxed">
+                <li>Buka fail <strong class="text-slate-800">Google Sheets</strong> baharu di Google Drive anda.</li>
+                <li>Pergi ke menu <strong class="text-slate-800">Extensions &gt; Apps Script</strong>.</li>
+                <li>Padamkan semua kod sedia ada dan tampal (<em class="text-slate-800">paste</em>) kod berikut:</li>
+            </ol>
+
+            <div class="relative my-3">
+                <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl text-[11px] font-mono overflow-x-auto select-all">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    data.timestamp || new Date().toLocaleString('ms-MY'),
+    data.nama || '',
+    data.umur || '',
+    data.jenis || '',
+    data.bacaan || '',
+    data.butiran || '',
+    data.status || '',
+    data.nota || ''
+  ]);
+  return ContentService.createTextOutput("OK").setMimeType(ContentService.MimeType.TEXT);
+}</pre>
+            </div>
+
+            <ol start="4" class="list-decimal list-inside text-xs text-slate-600 space-y-2 leading-relaxed">
+                <li>Tekan butang <strong class="text-slate-800">Deploy &gt; New deployment</strong>.</li>
+                <li>Pilih jenis <strong class="text-slate-800">Web app</strong>.</li>
+                <li>Setkan <strong class="text-slate-800">Who has access</strong> kepada <strong class="text-emerald-700 font-semibold">Anyone</strong> (Penting!).</li>
+                <li>Tekan <strong class="text-slate-800">Deploy</strong>, luluskan kebenaran, dan salin (<em class="text-slate-800">copy</em>) <strong>Web App URL</strong> yang terhasil ke ruangan Profil MyCare.</li>
+            </ol>
+
+            <button onclick="closeSheetGuide()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition">
+                Saya Faham & Sedia
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Mendedahkan fungsi kepada window
+        window.switchTab = switchTab;
+        window.showModal = showModal;
+        window.closeModal = closeModal;
+        window.openSheetGuide = openSheetGuide;
+        window.closeSheetGuide = closeSheetGuide;
+        window.checkBP = checkBP;
+        window.checkSugar = checkSugar;
+        window.saveProfile = saveProfile;
+        window.prepareAndPrint = prepareAndPrint;
+        window.deleteRecord = deleteRecord;
+        window.refreshData = refreshData;
+
+        let healthRecords = [];
+        let userProfile = { name: '', age: '', gender: 'Lelaki', weight: '', height: '', sheetUrl: '' };
+        
+        let app, auth, db, currentUser;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mycare-health-40';
+
+        async function initApp() {
+            updateCloudBadge("Sambung Cloud...", "loading");
+            let configObj = null;
+            try {
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    configObj = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+                }
+            } catch (e) {
+                console.error("Ralat membaca konfigurasi Firebase:", e);
+            }
+
+            if (configObj && Object.keys(configObj).length > 0) {
+                try {
+                    app = initializeApp(configObj);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    
+                    let userCred;
+                    if (auth.currentUser) {
+                        userCred = { user: auth.currentUser };
+                    } else if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        try {
+                            userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                        } catch (tokenErr) {
+                            userCred = await signInAnonymously(auth);
+                        }
+                    } else {
+                        userCred = await signInAnonymously(auth);
+                    }
+                    
+                    currentUser = userCred.user;
+                    updateCloudBadge("Cloud Disambung", "active");
+                    
+                    await loadProfileData();
+                    listenToRecordsData();
+                } catch (e) {
+                    console.error("Firebase initialization failed:", e);
+                    updateCloudBadge("Ralat Cloud", "error");
+                }
+            } else {
+                updateCloudBadge("Mod Luar Talian", "offline");
+            }
+        }
+
+        function updateCloudBadge(text, state) {
+            const badge = document.getElementById('cloud-badge');
+            if (!badge) return;
+            
+            if (state === "active") {
+                badge.className = "bg-emerald-600/90 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5 shadow-sm border border-emerald-400/30";
+                badge.innerHTML = `<i class="fas fa-cloud text-xs"></i> <span>${text}</span>`;
+            } else if (state === "loading") {
+                badge.className = "bg-blue-800 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
+                badge.innerHTML = `<i class="fas fa-spinner fa-spin text-xs"></i> <span>${text}</span>`;
+            } else if (state === "error") {
+                badge.className = "bg-rose-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
+                badge.innerHTML = `<i class="fas fa-exclamation-circle text-xs"></i> <span>${text}</span>`;
+            } else {
+                badge.className = "bg-slate-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1.5";
+                badge.innerHTML = `<i class="fas fa-hdd text-xs"></i> <span>${text}</span>`;
+            }
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+            const timeEl = document.getElementById('currentTime');
+            if (timeEl) timeEl.textContent = now.toLocaleDateString('ms-MY', options);
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        async function loadProfileData() {
+            if (!db || !currentUser) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profile', 'info');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    userProfile = docSnap.data();
+                    if (document.getElementById('prof-name')) document.getElementById('prof-name').value = userProfile.name || '';
+                    if (document.getElementById('prof-age')) document.getElementById('prof-age').value = userProfile.age || '';
+                    if (document.getElementById('prof-gender')) document.getElementById('prof-gender').value = userProfile.gender || 'Lelaki';
+                    if (document.getElementById('prof-weight')) document.getElementById('prof-weight').value = userProfile.weight || '';
+                    if (document.getElementById('prof-height')) document.getElementById('prof-height').value = userProfile.height || '';
+                    if (document.getElementById('prof-sheeturl')) document.getElementById('prof-sheeturl').value = userProfile.sheetUrl || '';
+                }
+            } catch (e) {
+                console.error("Gagal memuat profil:", e);
+            }
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('prof-name').value.trim();
+            const age = document.getElementById('prof-age').value.trim();
+            const gender = document.getElementById('prof-gender').value;
+            const weight = document.getElementById('prof-weight').value.trim();
+            const height = document.getElementById('prof-height').value.trim();
+            const sheetUrl = document.getElementById('prof-sheeturl').value.trim();
+
+            if (!name) {
+                showModal("Sila masukkan Nama Penuh anda sebelum menyimpan profil.", "Maklumat Diperlukan", "warning");
+                return;
+            }
+
+            userProfile = { name, age, gender, weight, height, sheetUrl, lastUpdated: new Date().toISOString() };
+
+            if (db && currentUser) {
+                try {
+                    updateCloudBadge("Menyimpan...", "loading");
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profile', 'info');
+                    await setDoc(docRef, userProfile, { merge: true });
+                    updateCloudBadge("Cloud Disambung", "active");
+                    
+                    let msg = "Profil dan tetapan MyCare telah berjaya disimpan ke Cloud!";
+                    if(sheetUrl) msg += " Pautan Google Sheets anda juga sedia untuk penghantaran automatik.";
+                    
+                    showModal(msg, "Berjaya Disimpan", "info");
+                } catch (e) {
+                    console.error("Gagal menyimpan profil:", e);
+                    updateCloudBadge("Ralat Cloud", "error");
+                    showModal("Gagal menyimpan ke Cloud: " + e.message, "Ralat", "error");
+                }
+            } else {
+                showModal("Data disimpan untuk sesi semasa.", "Info", "info");
+            }
+        }
+
+        function listenToRecordsData() {
+            if (!db || !currentUser) return;
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'records');
+            
+            onSnapshot(colRef, (snapshot) => {
+                const records = [];
+                snapshot.forEach(docSnap => {
+                    records.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                
+                records.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                healthRecords = records;
+                renderLog();
+            }, (error) => {
+                console.error("Gagal membaca rekod:", error);
+                updateCloudBadge("Ralat Cloud", "error");
+            });
+        }
+
+        function refreshData() {
+            if (db && currentUser) {
+                listenToRecordsData();
+                loadProfileData();
+                showModal("Data telah disegerakkan semula dari Cloud.", "Kemas Kini Berjaya", "info");
+            } else {
+                initApp();
+            }
+        }
+
+        // Hantar data ke Google Sheets Web App URL jika disetkan
+        async function syncToGoogleSheet(record) {
+            const url = userProfile.sheetUrl;
+            if (!url) return false;
+
+            try {
+                const payload = {
+                    timestamp: new Date().toLocaleString('ms-MY'),
+                    nama: userProfile.name || 'Pengguna MyCare',
+                    umur: userProfile.age || '-',
+                    jenis: record.type === 'BP' ? 'Tekanan Darah' : 'Gula Darah',
+                    bacaan: record.valueStr,
+                    butiran: record.extraStr,
+                    status: record.status,
+                    nota: record.notes
+                };
+
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                return true;
+            } catch (err) {
+                console.warn("Gagal sync ke Google Sheets:", err);
+                return false;
+            }
+        }
+
+        async function saveRecord(newRecord) {
+            // Hantar ke Google Sheets jika URL ada
+            const sheetSynced = await syncToGoogleSheet(newRecord);
+
+            if (db && currentUser) {
+                try {
+                    updateCloudBadge("Menyimpan...", "loading");
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'records');
+                    await addDoc(colRef, newRecord);
+                    updateCloudBadge("Cloud Disambung", "active");
+                    return { success: true, sheetSynced };
+                } catch (e) {
+                    console.error("Gagal simpan rekod:", e);
+                    updateCloudBadge("Ralat Cloud", "error");
+                    return { success: false, sheetSynced, error: e.message };
+                }
+            } else {
+                healthRecords.unshift({ id: Date.now().toString(), ...newRecord });
+                renderLog();
+                return { success: true, sheetSynced };
+            }
+        }
+
+        async function deleteRecord(recordId) {
+            if (!recordId) return;
+            
+            if (db && currentUser) {
+                try {
+                    updateCloudBadge("Memadam...", "loading");
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'records', recordId);
+                    await deleteDoc(docRef);
+                    updateCloudBadge("Cloud Disambung", "active");
+                    showModal("Rekod telah dipadamkan daripada Cloud.", "Berjaya Dipadam", "info");
+                } catch (e) {
+                    showModal("Gagal memadam rekod: " + e.message, "Ralat", "error");
+                }
+            } else {
+                healthRecords = healthRecords.filter(r => r.id !== recordId);
+                renderLog();
+                showModal("Rekod dipadamkan.", "Berjaya", "info");
+            }
+        }
+
+        function switchTab(tabId) {
+            ['profile', 'bp', 'sugar', 'log'].forEach(id => {
+                document.getElementById('sec-' + id)?.classList.add('hidden');
+                
+                const deskEl = document.getElementById('tab-' + id + '-desk');
+                if (deskEl) {
+                    deskEl.classList.remove('text-indigo-600', 'bg-indigo-50', 'text-blue-600', 'bg-blue-50', 'text-red-600', 'bg-red-50', 'text-emerald-600', 'bg-emerald-50');
+                    deskEl.classList.add('text-slate-500');
+                }
+
+                const mobEl = document.getElementById('tab-' + id + '-mob');
+                if (mobEl) {
+                    mobEl.classList.remove('text-indigo-600', 'text-blue-600', 'text-red-500', 'text-emerald-500');
+                    mobEl.classList.add('text-slate-400');
+                }
+            });
+
+            document.getElementById('sec-' + tabId)?.classList.remove('hidden');
+
+            let activeDeskClass = tabId === 'profile' ? ['text-indigo-600', 'bg-indigo-50'] : tabId === 'bp' ? ['text-blue-600', 'bg-blue-50'] : tabId === 'sugar' ? ['text-red-600', 'bg-red-50'] : ['text-emerald-600', 'bg-emerald-50'];
+            let activeMobClass = tabId === 'profile' ? 'text-indigo-600' : tabId === 'bp' ? 'text-blue-600' : tabId === 'sugar' ? 'text-red-500' : 'text-emerald-500';
+
+            const activeDesk = document.getElementById('tab-' + tabId + '-desk');
+            if (activeDesk) {
+                activeDesk.classList.remove('text-slate-500');
+                activeDesk.classList.add(...activeDeskClass);
+            }
+
+            const activeMob = document.getElementById('tab-' + tabId + '-mob');
+            if (activeMob) {
+                activeMob.classList.remove('text-slate-400');
+                activeMob.classList.add(activeMobClass);
+            }
+
+            if(tabId === 'log') renderLog();
+        }
+
+        function showModal(message, title = "Makluman", type = "info") {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            
+            const iconContainer = document.getElementById('modal-icon-container');
+            const icon = document.getElementById('modal-icon');
+            
+            if (type === "error" || type === "warning") {
+                iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 mb-4';
+                icon.className = 'fas fa-exclamation-triangle text-rose-600 text-xl';
+            } else {
+                iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4';
+                icon.className = 'fas fa-check-circle text-blue-600 text-xl';
+            }
+
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+
+        function openSheetGuide() {
+            const modal = document.getElementById('sheet-guide-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); }, 10);
+        }
+
+        function closeSheetGuide() {
+            const modal = document.getElementById('sheet-guide-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+
+        async function checkBP() {
+            const sys = parseInt(document.getElementById('sys').value);
+            const dia = parseInt(document.getElementById('dia').value);
+            const hr = document.getElementById('hr').value || '-';
+            const notes = document.getElementById('bp-notes').value;
+
+            if (!sys || !dia) {
+                showModal("Sila masukkan nilai Sistolik dan Diastolik.", "Maklumat Tidak Lengkap", "warning");
+                return;
+            }
+
+            let status = "", advice = "", color = "", icon = "";
+
+            if (sys < 120 && dia < 80) {
+                status = "Normal (Optimum)";
+                advice = "Tahniah! Tekanan darah anda berada pada tahap yang sangat baik. Teruskan pemakanan sihat dan senaman berterusan.";
+                color = "border-emerald-500";
+                icon = '<i class="fas fa-circle-check text-emerald-500"></i>';
+            } else if (sys >= 120 && sys <= 129 && dia < 80) {
+                status = "Meningkat (Berwaspada)";
+                advice = "Bacaan sedikit tinggi. Elakkan pengambilan garam berlebihan dan pastikan anda cukup rehat.";
+                color = "border-amber-500";
+                icon = '<i class="fas fa-triangle-exclamation text-amber-500"></i>';
+            } else if ((sys >= 130 && sys <= 139) || (dia >= 80 && dia <= 89)) {
+                status = "Hipertensi Tahap 1";
+                advice = "Amaran awal tekanan darah tinggi. Berjumpa doktor untuk nasihat susulan jika berterusan.";
+                color = "border-orange-500";
+                icon = '<i class="fas fa-triangle-exclamation text-orange-500"></i>';
+            } else {
+                status = "Hipertensi Tahap 2";
+                advice = "Tekanan darah tinggi! Sila rujuk doktor atau klinik terdekat untuk pemeriksaan rapi.";
+                color = "border-rose-600";
+                icon = '<i class="fas fa-hospital text-rose-600"></i>';
+            }
+
+            const resultBox = document.getElementById('bp-result');
+            resultBox.className = `mt-6 bg-white p-5 rounded-2xl shadow-sm border-l-4 slide-up ${color}`;
+            document.getElementById('bp-status').textContent = status;
+            document.getElementById('bp-advice').textContent = advice;
+            document.getElementById('bp-icon').innerHTML = icon;
+            resultBox.classList.remove('hidden');
+
+            const res = await saveRecord({
+                type: 'BP',
+                date: new Date().toISOString(),
+                valueStr: `${sys}/${dia} mmHg`,
+                extraStr: `Nadi: ${hr} bpm`,
+                status: status,
+                notes: notes,
+                colorClass: color.replace('border-', 'text-')
+            });
+
+            if (res.success) {
+                let noteExtra = res.sheetSynced ? " (Disimpan ke Cloud & Google Sheets!)" : " (Disimpan ke Cloud!)";
+                showModal("Rekod Tekanan Darah telah dianalisis dan disimpan secara automatik" + noteExtra, "Berjaya Disimpan", "info");
+                document.getElementById('sys').value = '';
+                document.getElementById('dia').value = '';
+                document.getElementById('hr').value = '';
+            }
+        }
+
+        async function checkSugar() {
+            const glucose = parseFloat(document.getElementById('glucose').value);
+            const typeNode = document.querySelector('input[name="sugarType"]:checked');
+            
+            if (!glucose || !typeNode) {
+                showModal("Sila masukkan bacaan gula darah anda.", "Maklumat Tidak Lengkap", "warning");
+                return;
+            }
+
+            const type = typeNode.value;
+            let status = "", advice = "", color = "", icon = "";
+
+            if (type === "Berpuasa") {
+                if (glucose < 5.6) {
+                    status = "Normal";
+                    advice = "Paras gula puasa anda stabil dan amat memuaskan.";
+                    color = "border-emerald-500";
+                    icon = '<i class="fas fa-circle-check text-emerald-500"></i>';
+                } else if (glucose >= 5.6 && glucose <= 6.9) {
+                    status = "Pradiabetes (Berwaspada)";
+                    advice = "Bacaan menunjukkan kecenderungan rintangan insulin. Kurangkan minuman manis dan karbohidrat ringkas.";
+                    color = "border-amber-500";
+                    icon = '<i class="fas fa-triangle-exclamation text-amber-500"></i>';
+                } else {
+                    status = "Tinggi (Risiko Diabetes)";
+                    advice = "Bacaan berpuasa > 7.0 mmol/L memerlukan perhatian. Rujuk doktor untuk ujian makmal pengesahan.";
+                    color = "border-rose-600";
+                    icon = '<i class="fas fa-hospital text-rose-600"></i>';
+                }
+            } else {
+                if (glucose < 7.8) {
+                    status = "Normal";
+                    advice = "Badan anda memproses gula selepas makan dengan cekap.";
+                    color = "border-emerald-500";
+                    icon = '<i class="fas fa-circle-check text-emerald-500"></i>';
+                } else if (glucose >= 7.8 && glucose < 11.1) {
+                    status = "Tinggi Sedikit";
+                    advice = "Gula darah agak tinggi selepas makan. Perhatikan saiz hidangan makanan anda.";
+                    color = "border-orange-500";
+                    icon = '<i class="fas fa-triangle-exclamation text-orange-500"></i>';
+                } else {
+                    status = "Tinggi (Risiko Diabetes)";
+                    advice = "Bacaan berulang di atas 11.1 mmol/L perlu mendapat khidmat nasihat perubatan profesional.";
+                    color = "border-rose-600";
+                    icon = '<i class="fas fa-hospital text-rose-600"></i>';
+                }
+            }
+
+            const resultBox = document.getElementById('sugar-result');
+            resultBox.className = `mt-6 bg-white p-5 rounded-2xl shadow-sm border-l-4 slide-up ${color}`;
+            document.getElementById('sugar-status').textContent = status;
+            document.getElementById('sugar-advice').textContent = advice;
+            document.getElementById('sugar-icon').innerHTML = icon;
+            resultBox.classList.remove('hidden');
+
+            const res = await saveRecord({
+                type: 'SUGAR',
+                date: new Date().toISOString(),
+                valueStr: `${glucose} mmol/L`,
+                extraStr: type,
+                status: status,
+                notes: 'Ujian ' + type,
+                colorClass: color.replace('border-', 'text-')
+            });
+
+            if (res.success) {
+                let noteExtra = res.sheetSynced ? " (Disimpan ke Cloud & Google Sheets!)" : " (Disimpan ke Cloud!)";
+                showModal("Rekod Gula Darah telah dianalisis dan disimpan secara automatik" + noteExtra, "Berjaya Disimpan", "info");
+                document.getElementById('glucose').value = '';
+            }
+        }
+
+        function renderLog() {
+            const container = document.getElementById('log-container');
+            if (!container) return;
+            
+            if (healthRecords.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fas fa-folder-open text-4xl mb-3 text-slate-300"></i>
+                        <p class="font-medium">Tiada rekod setakat ini.</p>
+                        <p class="text-xs mt-1 text-slate-400">Setiap rekod ujian akan terpapar di sini secara automatik.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            healthRecords.forEach(record => {
+                const dateObj = new Date(record.date || Date.now());
+                const dateStr = dateObj.toLocaleDateString('ms-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+                
+                const typeIcon = record.type === 'BP' ? '<i class="fas fa-stethoscope text-blue-500"></i>' : '<i class="fas fa-droplet text-red-500"></i>';
+                const typeLabel = record.type === 'BP' ? 'Tekanan Darah' : 'Gula Darah';
+                const bgType = record.type === 'BP' ? 'bg-blue-50/40 border-blue-100' : 'bg-red-50/40 border-red-100';
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border shadow-xs flex flex-col slide-up ${bgType}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                            ${typeIcon} ${typeLabel}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-[11px] text-slate-400 font-mono">
+                                ${dateStr} • ${timeStr}
+                            </div>
+                            <button onclick="deleteRecord('${record.id}')" title="Padam Rekod" class="text-slate-300 hover:text-rose-600 p-1 rounded transition">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <div class="text-lg font-bold text-slate-900">${record.valueStr}</div>
+                            <div class="text-xs text-slate-500">${record.extraStr}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-bold ${record.colorClass}">${record.status}</div>
+                            <div class="text-[11px] text-slate-400">${record.notes}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function prepareAndPrint() {
+            const printCont = document.getElementById('print-container');
+            const today = new Date().toLocaleDateString('ms-MY');
+            
+            let w = parseFloat(userProfile.weight);
+            let h = parseFloat(userProfile.height) / 100;
+            let bmiStr = "-";
+            if (w && h && h > 0) {
+                let bmi = w / (h * h);
+                bmiStr = bmi.toFixed(1) + ` (${getBMIStatus(bmi)})`;
+            }
+
+            let rowsHtml = '';
+            if (healthRecords.length === 0) {
+                rowsHtml = '<tr><td colspan="4" style="text-align:center; padding: 15px; color:#666;">Tiada rekod disimpan setakat ini.</td></tr>';
+            } else {
+                healthRecords.forEach(r => {
+                    const d = new Date(r.date || Date.now());
+                    const dateStr = `${d.toLocaleDateString('ms-MY')} <br><span style="color:#666; font-size:11px;">${d.toLocaleTimeString('ms-MY', {hour:'2-digit', minute:'2-digit'})}</span>`;
+                    const typeLabel = r.type === 'BP' ? 'Tekanan Darah' : 'Gula Darah';
+                    let colorHex = '#000';
+                    if(r.colorClass && r.colorClass.includes('rose')) colorHex = '#e11d48';
+                    else if(r.colorClass && (r.colorClass.includes('orange') || r.colorClass.includes('amber'))) colorHex = '#d97706';
+                    else if(r.colorClass && r.colorClass.includes('emerald')) colorHex = '#059669';
+
+                    rowsHtml += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 10px 8px; vertical-align: top;">${dateStr}</td>
+                            <td style="padding: 10px 8px; vertical-align: top;"><b>${typeLabel}</b><br><span style="font-size:11px; color:#64748b;">${r.extraStr}</span></td>
+                            <td style="padding: 10px 8px; font-weight: bold; font-size: 14px; vertical-align: top;">${r.valueStr}</td>
+                            <td style="padding: 10px 8px; color: ${colorHex}; font-weight: 600; vertical-align: top;">${r.status}<br><span style="font-size:11px; color:#64748b; font-weight: normal;">${r.notes}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            printCont.innerHTML = `
+                <div style="font-family: 'Inter', sans-serif; color: #0f172a; max-width: 800px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; border-bottom: 3px solid #1d4ed8; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h1 style="margin: 0; color: #1e40af; font-size:24px; font-weight:bold;">MyCare - Laporan Kesihatan 40+</h1>
+                        <p style="margin: 5px 0 0 0; color: #64748b; font-size:13px;">Tarikh Cetakan Laporan: ${today}</p>
+                    </div>
+                    
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+                        <h3 style="margin-top: 0; margin-bottom: 10px; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; font-size:15px; font-weight:bold;">Profil Pengguna</h3>
+                        <table style="width: 100%; text-align: left; font-size: 13px; border-spacing: 0;">
+                            <tr>
+                                <th style="padding: 4px 0; width: 15%; color:#64748b;">Nama:</th>
+                                <td style="padding: 4px 0; width: 35%; font-weight:bold;">${userProfile.name || 'Tidak Dinyatakan'}</td>
+                                <th style="padding: 4px 0; width: 15%; color:#64748b;">Umur:</th>
+                                <td style="padding: 4px 0; width: 35%;">${userProfile.age ? userProfile.age + ' Tahun' : '-'}</td>
+                            </tr>
+                            <tr>
+                                <th style="padding: 4px 0; color:#64748b;">Jantina:</th>
+                                <td style="padding: 4px 0;">${userProfile.gender || '-'}</td>
+                                <th style="padding: 4px 0; color:#64748b;">BMI:</th>
+                                <td style="padding: 4px 0;">${bmiStr}</td>
+                            </tr>
+                            <tr>
+                                <th style="padding: 4px 0; color:#64748b;">Berat:</th>
+                                <td style="padding: 4px 0;">${userProfile.weight ? userProfile.weight + ' kg' : '-'}</td>
+                                <th style="padding: 4px 0; color:#64748b;">Tinggi:</th>
+                                <td style="padding: 4px 0;">${userProfile.height ? userProfile.height + ' cm' : '-'}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <h3 style="margin-bottom: 12px; color: #334155; font-size:15px; font-weight:bold;">Sejarah Ujian Kesihatan</h3>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #94a3b8;">
+                                <th style="padding: 8px; width: 22%;">Tarikh & Masa</th>
+                                <th style="padding: 8px; width: 25%;">Jenis Ujian</th>
+                                <th style="padding: 8px; width: 20%;">Bacaan</th>
+                                <th style="padding: 8px; width: 33%;">Status & Nota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 35px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                        *Dijana secara automatik oleh aplikasi MyCare. Laporan ini berfungsi sebagai catatan saringan awal untuk rujukan pegawai perubatan.
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => { window.print(); }, 250);
+        }
+
+        function getBMIStatus(bmi) {
+            if(bmi < 18.5) return "Kurang Berat";
+            if(bmi >= 18.5 && bmi <= 24.9) return "Normal";
+            if(bmi >= 25 && bmi <= 29.9) return "Lebihan Berat";
+            return "Obesiti";
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
